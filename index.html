@@ -1,0 +1,2358 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Tap or Die</title>
+  <script>
+    window.yaContextCb = window.yaContextCb || [];
+  </script>
+  <script src="https://yandex.ru/ads/system/context.js" async></script>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #161a22;
+      --accent: #ff6a00;
+      --accent-2: #36d1dc;
+      --text: #f5f7ff;
+      --muted: #a7b0c0;
+      --danger: #ff3b3b;
+      --success: #32d583;
+      --shadow: rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--text);
+    }
+
+    html, body {
+      height: 100%;
+      background: radial-gradient(1200px 800px at 50% -10%, #1f2430 0%, var(--bg) 55%);
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .game {
+      width: min(420px, 100%);
+      min-height: 620px;
+      background: linear-gradient(180deg, #151a23 0%, #12161d 100%);
+      border-radius: 22px;
+      padding: 20px 18px 24px;
+      box-shadow: 0 20px 60px var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .subheader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .streak, .best {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .progress {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #c8d2e6;
+      white-space: nowrap;
+    }
+
+    .streak span, .best span {
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .chips {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .score {
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .score span {
+      font-size: 18px;
+      color: var(--text);
+      margin-left: 6px;
+    }
+
+    .timer {
+      flex: 1;
+      height: 10px;
+      border-radius: 999px;
+      background: #1d2430;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .timer-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, var(--accent-2), var(--accent));
+      transition: width 0.1s linear;
+    }
+
+    .timer-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #c6d0e1;
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .lives {
+      font-size: 16px;
+      letter-spacing: 3px;
+      white-space: nowrap;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 18px;
+      text-align: center;
+      padding: 12px 6px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .question {
+      font-size: 22px;
+      line-height: 1.4;
+      min-height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .buttons {
+      width: 100%;
+      display: grid;
+      gap: 12px;
+    }
+
+    .ad-slot {
+      width: 100%;
+      min-height: 70px;
+      border-radius: 12px;
+      background: rgba(15, 19, 26, 0.6);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8f9bb0;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .visual {
+      width: 100%;
+      height: 240px;
+      border-radius: 0;
+      background: transparent;
+      overflow: hidden;
+      animation: floatIn 0.6s ease;
+    }
+
+    .visual svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .visual svg .scene-icon {
+      animation: iconFloat 3.2s ease-in-out infinite;
+      transform-origin: 50% 50%;
+    }
+
+    .visual svg .spark {
+      animation: twinkle 2.4s ease-in-out infinite;
+    }
+
+    .visual svg .orb {
+      animation: orbFloat 6s ease-in-out infinite;
+      transform-origin: 50% 50%;
+    }
+
+    .visual svg .wave {
+      animation: waveMove 6s ease-in-out infinite;
+      transform-origin: 50% 50%;
+    }
+
+    .visual svg .sweep {
+      opacity: 0.2;
+      animation: sweep 7s linear infinite;
+    }
+
+    button {
+      font-family: inherit;
+      color: inherit;
+    }
+
+    .action-btn {
+      appearance: none;
+      border: none;
+      border-radius: 16px;
+      padding: 16px 20px 16px 54px;
+      font-size: 18px;
+      font-weight: 700;
+      background: var(--panel);
+      box-shadow: 0 10px 20px var(--shadow);
+      cursor: pointer;
+      transition: transform 0.08s ease, background 0.2s ease, opacity 0.2s ease;
+      position: relative;
+    }
+
+    .action-btn:active {
+      transform: scale(0.98);
+    }
+
+    .choice-btn::before {
+      content: "";
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.12);
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    #optionA.choice-btn::before {
+      content: "1";
+    }
+
+    #optionB.choice-btn::before {
+      content: "2";
+    }
+
+    .primary {
+      background: linear-gradient(135deg, #ff7a1a 0%, #ff4d00 100%);
+    }
+
+    .secondary {
+      background: linear-gradient(135deg, #2dd4bf 0%, #22c55e 100%);
+    }
+
+    .chip {
+      appearance: none;
+      border: 1px solid #253045;
+      background: #141a23;
+      color: #c6d0e1;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.08s ease, border 0.2s ease, color 0.2s ease;
+    }
+
+    .chip:active {
+      transform: translateY(1px);
+    }
+
+    .chip.active {
+      border-color: var(--accent-2);
+      color: var(--text);
+    }
+
+    .chip.theme {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chip .swatches {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .chip .swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+    }
+
+    .status {
+      font-size: 14px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .hint {
+      min-height: 18px;
+      font-size: 13px;
+      color: #b7c2d6;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .hint.pop {
+      animation: hintPop 0.4s ease;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(8, 10, 14, 0.94);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .panel {
+      background: #121720;
+      border-radius: 18px;
+      padding: 24px 20px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px var(--shadow);
+      animation: scaleIn 0.3s ease;
+    }
+
+    .panel h2 {
+      font-size: 26px;
+      margin-bottom: 8px;
+    }
+
+    .panel p {
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .panel .score-big {
+      font-size: 42px;
+      font-weight: 800;
+      margin: 10px 0 20px;
+      color: var(--danger);
+    }
+
+    .panel .score-big.win {
+      color: var(--success);
+    }
+
+    .result-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    #rewardBtn {
+      display: none;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #1f8ef1 0%, #23d5ab 100%);
+    }
+
+    .result-meta span {
+      color: var(--text);
+      font-size: 13px;
+      margin-left: 6px;
+    }
+
+    .achievements {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .achievement {
+      padding: 6px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: #1b2431;
+      color: #cfe4ff;
+      border: 1px solid transparent;
+    }
+
+    .achievement.new {
+      border-color: #5fb3ff;
+      color: #ffffff;
+      background: #223246;
+    }
+
+    .last-runs {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .high-scores {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .high-scores .title {
+      color: #cfe4ff;
+      font-size: 11px;
+    }
+
+    .panel .action-btn {
+      width: 100%;
+    }
+
+    .fade {
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes floatIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes hintPop {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .content.shake {
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      50% { transform: translateX(6px); }
+      75% { transform: translateX(-4px); }
+      100% { transform: translateX(0); }
+    }
+
+    @keyframes iconFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.35; }
+      50% { opacity: 0.9; }
+    }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(6px) scale(1.05); }
+    }
+
+    @keyframes waveMove {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(4px); }
+    }
+
+    @keyframes sweep {
+      from { transform: translateX(-140px); }
+      to { transform: translateX(460px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+
+    @media (max-height: 640px) {
+      .game {
+        min-height: 560px;
+      }
+      .visual {
+        height: 200px;
+      }
+      .question {
+        font-size: 20px;
+      }
+      .action-btn {
+        font-size: 16px;
+      }
+      .ad-slot {
+        min-height: 56px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="game" aria-live="polite">
+    <div class="header">
+      <div class="score">Счёт<span id="score">0</span></div>
+      <div class="timer" aria-label="Таймер">
+        <div class="timer-fill" id="timerFill"></div>
+        <div class="timer-label" id="timerLabel"></div>
+      </div>
+      <div class="lives" id="lives" aria-label="Жизни">❤❤❤</div>
+    </div>
+    <div class="subheader">
+      <div class="streak">Серия <span id="streak">0</span></div>
+      <div class="progress" id="speedInfo">Ускорение через 3</div>
+      <div class="chips">
+        <button class="chip" id="modeBtn" type="button">Режим: Бесконечный</button>
+        <button class="chip theme" id="themeBtn" type="button">Тема: Ночь</button>
+        <button class="chip" id="difficultyBtn" type="button">Сложность: Норм</button>
+        <button class="chip" id="soundBtn" type="button">Звук: Вкл</button>
+        <button class="chip" id="vibeBtn" type="button">Вибро: Вкл</button>
+      </div>
+      <div class="best">Рекорд <span id="bestScore">0</span></div>
+    </div>
+
+    <section class="content fade" id="content">
+      <div class="status" id="levelStatus">Уровень 1</div>
+      <div class="hint" id="hint">Готов? Жми быстро.</div>
+      <div class="visual" id="visual"></div>
+      <div class="question" id="question">Нажми кнопку</div>
+      <div class="buttons">
+        <button class="action-btn choice-btn primary" id="optionA" type="button">Нажать</button>
+        <button class="action-btn choice-btn secondary" id="optionB" type="button">Не нажимать</button>
+      </div>
+    </section>
+    <div class="ad-slot" id="adBanner" aria-label="Реклама">Реклама</div>
+
+    <div class="overlay" id="overlay">
+      <div class="panel">
+        <h2 id="resultTitle">Проигрыш</h2>
+        <p id="resultText">Ты выбрал не тот вариант или время вышло.</p>
+        <div class="score-big" id="finalScore">0</div>
+        <div class="result-meta">
+          <div>Рекорд <span id="bestScoreFinal">0</span></div>
+          <div>Серия <span id="bestStreakFinal">0</span></div>
+        </div>
+        <button class="action-btn" id="rewardBtn" type="button">Продолжить за рекламу</button>
+        <div class="achievements" id="achievements"></div>
+        <div class="last-runs" id="lastRuns"></div>
+        <div class="high-scores" id="highScores"></div>
+        <button class="action-btn" id="restartBtn" type="button">Играть снова</button>
+      </div>
+    </div>
+  </main>
+
+    <script>
+    const CONFIG = {
+      baseDuration: 5000,
+      minDuration: 2200,
+      speedUpEvery: 3,
+      speedUpBy: 150,
+      lives: 3,
+      dailyCount: 12,
+      transitionDelay: 180
+    };
+
+    const CATEGORY_WEIGHTS = {
+      danger: 4,
+      quiz: 3,
+      fun: 2
+    };
+
+    const CATEGORY_LABELS = {
+      danger: "Опасность",
+      quiz: "Викторина",
+      fun: "Прикол"
+    };
+
+    const THEMES = [
+      {
+        name: "Ночь",
+        swatches: ["#0f1115", "#ff6a00", "#36d1dc"],
+        vars: {
+          "--bg": "#0f1115",
+          "--panel": "#161a22",
+          "--accent": "#ff6a00",
+          "--accent-2": "#36d1dc",
+          "--text": "#f5f7ff",
+          "--muted": "#a7b0c0",
+          "--danger": "#ff3b3b",
+          "--success": "#32d583",
+          "--shadow": "rgba(0, 0, 0, 0.35)"
+        }
+      },
+      {
+        name: "Солнце",
+        swatches: ["#151219", "#ff9b2f", "#ffd166"],
+        vars: {
+          "--bg": "#151219",
+          "--panel": "#221825",
+          "--accent": "#ff9b2f",
+          "--accent-2": "#ffd166",
+          "--text": "#fff4eb",
+          "--muted": "#d7b8a8",
+          "--danger": "#ff5d5d",
+          "--success": "#6ee7b7",
+          "--shadow": "rgba(18, 10, 20, 0.4)"
+        }
+      },
+      {
+        name: "Неон",
+        swatches: ["#0b0c12", "#8b5cf6", "#22d3ee"],
+        vars: {
+          "--bg": "#0b0c12",
+          "--panel": "#151622",
+          "--accent": "#8b5cf6",
+          "--accent-2": "#22d3ee",
+          "--text": "#eef2ff",
+          "--muted": "#98a2c7",
+          "--danger": "#f43f5e",
+          "--success": "#22c55e",
+          "--shadow": "rgba(0, 0, 0, 0.45)"
+        }
+      },
+      {
+        name: "Лес",
+        swatches: ["#0e1511", "#6ee7b7", "#a7f3d0"],
+        vars: {
+          "--bg": "#0e1511",
+          "--panel": "#142019",
+          "--accent": "#34d399",
+          "--accent-2": "#a7f3d0",
+          "--text": "#ecfdf5",
+          "--muted": "#9fb8a7",
+          "--danger": "#f87171",
+          "--success": "#10b981",
+          "--shadow": "rgba(5, 10, 7, 0.4)"
+        }
+      },
+      {
+        name: "Пустыня",
+        swatches: ["#1a1410", "#f59e0b", "#fde68a"],
+        vars: {
+          "--bg": "#1a1410",
+          "--panel": "#231a14",
+          "--accent": "#f59e0b",
+          "--accent-2": "#fde68a",
+          "--text": "#fff7ed",
+          "--muted": "#d6b79a",
+          "--danger": "#ef4444",
+          "--success": "#fbbf24",
+          "--shadow": "rgba(20, 12, 5, 0.45)"
+        }
+      },
+      {
+        name: "Арктика",
+        swatches: ["#0c1218", "#38bdf8", "#bae6fd"],
+        vars: {
+          "--bg": "#0c1218",
+          "--panel": "#151f2a",
+          "--accent": "#38bdf8",
+          "--accent-2": "#bae6fd",
+          "--text": "#f0f9ff",
+          "--muted": "#9bb5c8",
+          "--danger": "#f43f5e",
+          "--success": "#22d3ee",
+          "--shadow": "rgba(6, 10, 15, 0.45)"
+        }
+      },
+      {
+        name: "Вишня",
+        swatches: ["#1b0e16", "#f43f5e", "#f472b6"],
+        vars: {
+          "--bg": "#1b0e16",
+          "--panel": "#24121d",
+          "--accent": "#f43f5e",
+          "--accent-2": "#f472b6",
+          "--text": "#fff1f2",
+          "--muted": "#d3a6b4",
+          "--danger": "#fb7185",
+          "--success": "#fda4af",
+          "--shadow": "rgba(20, 8, 12, 0.45)"
+        }
+      },
+      {
+        name: "Океан",
+        swatches: ["#0b1117", "#0ea5e9", "#22d3ee"],
+        vars: {
+          "--bg": "#0b1117",
+          "--panel": "#121c27",
+          "--accent": "#0ea5e9",
+          "--accent-2": "#22d3ee",
+          "--text": "#e0f2fe",
+          "--muted": "#8fa8bf",
+          "--danger": "#f43f5e",
+          "--success": "#38bdf8",
+          "--shadow": "rgba(3, 8, 12, 0.5)"
+        }
+      },
+      {
+        name: "Пастель",
+        swatches: ["#18151e", "#a78bfa", "#f9a8d4"],
+        vars: {
+          "--bg": "#18151e",
+          "--panel": "#211b2b",
+          "--accent": "#a78bfa",
+          "--accent-2": "#f9a8d4",
+          "--text": "#fdf4ff",
+          "--muted": "#cbbad9",
+          "--danger": "#fb7185",
+          "--success": "#c4b5fd",
+          "--shadow": "rgba(14, 8, 18, 0.4)"
+        }
+      },
+      {
+        name: "Лайм",
+        swatches: ["#10140d", "#84cc16", "#bef264"],
+        vars: {
+          "--bg": "#10140d",
+          "--panel": "#171f12",
+          "--accent": "#84cc16",
+          "--accent-2": "#bef264",
+          "--text": "#f7fee7",
+          "--muted": "#b9c8a1",
+          "--danger": "#f87171",
+          "--success": "#22c55e",
+          "--shadow": "rgba(9, 12, 6, 0.4)"
+        }
+      }
+    ];
+
+    const STORAGE = {
+      bestScore: "tod_bestScore",
+      bestStreak: "tod_bestStreak",
+      lastRuns: "tod_lastRuns",
+      achievements: "tod_achievements",
+      theme: "tod_theme",
+      difficulty: "tod_difficulty",
+      sound: "tod_sound",
+      vibe: "tod_vibe",
+      tutorial: "tod_tutorial",
+      highScores: "tod_highScores",
+      dailyBest: "tod_daily_best",
+      dailyDate: "tod_daily_date"
+    };
+
+    const ACHIEVEMENT_TITLES = {
+      streak5: "Серия 5",
+      streak10: "Серия 10",
+      riskWin: "Риск оправдан",
+      jackpot: "Джекпот",
+      perfect10: "Без ошибок 10",
+      dailyHero: "Дневной герой"
+    };
+
+    const reactions = [
+      "Супер-тап!",
+      "Ловко!",
+      "Быстро!",
+      "Так держать!",
+      "Идеально!",
+      "Снайпер!",
+      "Это было опасно.",
+      "Судьба улыбается.",
+      "Еще шаг!",
+      "Герой момента."
+    ];
+
+    const failReactions = {
+      wrong: [
+        "Ой, палец дернулся!",
+        "Почти, но нет.",
+        "Это был смелый выбор... и неправильный.",
+        "Логика ушла пить чай.",
+        "Мозг: 404, ответ не найден.",
+        "Ты нажал сердцем, а надо было головой.",
+        "Интуиция подвела, но красиво!",
+        "Неверно, но звучало уверенно.",
+        "Так можно было... но лучше не надо.",
+        "Ошибка — тоже опыт!"
+      ],
+      time: [
+        "Время улетело, как тап.",
+        "Пока ты думал, таймер победил.",
+        "Слишком медленно для ниндзя.",
+        "Пауза затянулась.",
+        "Таймер: 1, ты: 0.",
+        "Нужна турбокнопка!",
+        "Раздумья — враг победы.",
+        "Секунды были быстрее.",
+        "Ты моргнул — и всё.",
+        "Времени не хватило, зато идея была!"
+      ]
+    };
+
+    const scene = (icon, title, subtitle, accent = "#6ea8ff") => ({
+      icon,
+      title,
+      subtitle,
+      accent
+    });
+
+    const ADS = {
+      bannerId: "REPLACE_WITH_YANDEX_BLOCK_ID",
+      rewardedId: "REPLACE_WITH_YANDEX_REWARDED_ID"
+    };
+
+    const levels = [
+      {
+        question: "Ты у обрыва. Прыгнуть на спор?",
+        options: ["Прыгнуть", "Отойти"],
+        correct: 1,
+        category: "danger",
+        scene: scene("🕳️", "Обрыв", "Ветер свистит, земли не видно", "#7c9cff")
+      },
+      {
+        question: "Горит кнопка. Нажмешь?",
+        options: ["Нажать", "Не трогать"],
+        correct: 1,
+        category: "danger",
+        scene: scene("🔴", "Красная кнопка", "Писк и мигающий свет", "#ff6a6a")
+      },
+      {
+        question: "В лифте нет света. Жать все кнопки?",
+        options: ["Жать все", "Ждать спокойно"],
+        correct: 1,
+        category: "danger",
+        scene: scene("🛗", "Темный лифт", "Только аварийный огонек", "#8bd3ff")
+      },
+      {
+        question: "Перед тобой рычаг. Потянуть?",
+        options: ["Потянуть", "Не трогать"],
+        correct: 0,
+        category: "danger",
+        risk: true,
+        scene: scene("🕹️", "Рычаг", "Старый, пыльный, подозрительный", "#ffd166")
+      },
+      {
+        question: "Сигнал тревоги. Бежать?",
+        options: ["Бежать", "Остаться"],
+        correct: 0,
+        category: "danger",
+        scene: scene("🚨", "Сирена", "Мигает и давит на уши", "#ff9f9f")
+      },
+      {
+        question: "Телефон незнакомца звонит. Ответить?",
+        options: ["Ответить", "Не отвечать"],
+        correct: 1,
+        category: "danger",
+        scene: scene("📞", "Звонок", "Номер скрыт", "#9ad6a3")
+      },
+      {
+        question: "Окно открыто. Высунуться?",
+        options: ["Высунуться", "Закрыть"],
+        correct: 1,
+        category: "danger",
+        scene: scene("🪟", "Открытое окно", "Снаружи шумный город", "#7bdff2")
+      },
+      {
+        question: "Слишком тихо. Проверить?",
+        options: ["Проверить", "Не идти"],
+        correct: 1,
+        category: "danger",
+        scene: scene("🚪", "Тихий коридор", "Слышен только тик", "#c3aed6")
+      },
+      {
+        question: "Счетчик тикает. Остановить?",
+        options: ["Остановить", "Не трогать"],
+        correct: 0,
+        category: "danger",
+        risk: true,
+        scene: scene("⏱️", "Таймер", "Цифры бегут назад", "#ffd166")
+      },
+      {
+        question: "Незнакомый файл. Открыть?",
+        options: ["Открыть", "Удалить"],
+        correct: 1,
+        category: "quiz",
+        scene: scene("💾", "Файл", "Название: FINAL_FINAL_3", "#90caf9")
+      },
+      {
+        question: "Стол накрыт. Попробовать?",
+        options: ["Попробовать", "Спросить сначала"],
+        correct: 1,
+        category: "fun",
+        scene: scene("🍽️", "Шведский стол", "Запах подозрительно прекрасен", "#ffd6a5")
+      },
+      {
+        question: "Сколько будет 2 + 2?",
+        options: ["4", "5"],
+        correct: 0,
+        category: "quiz",
+        jackpot: true,
+        scene: scene("➕", "Мини-викторина", "Разминка для мозга", "#b8f2e6")
+      },
+      {
+        question: "Столица Франции?",
+        options: ["Париж", "Марс"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("🗼", "География", "Подсказка: не планета", "#cdb4db")
+      },
+      {
+        question: "Сколько дней в неделе?",
+        options: ["7", "8"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("📅", "Календарь", "Он не сломался", "#a2d2ff")
+      },
+      {
+        question: "Кто мяукает?",
+        options: ["Кот", "Трактор"],
+        correct: 0,
+        category: "fun",
+        scene: scene("🐈", "Зоопульт", "Где-то звучит «мяу»", "#ffc8dd")
+      },
+      {
+        question: "Что больше: байт или гигабайт?",
+        options: ["Байт", "Гигабайт"],
+        correct: 1,
+        category: "quiz",
+        jackpot: true,
+        scene: scene("💾", "Айти-вопрос", "Байт к байту — и гигабайт", "#bde0fe")
+      },
+      {
+        question: "Выбери фрукт.",
+        options: ["Яблоко", "Гайка"],
+        correct: 0,
+        category: "fun",
+        calm: true,
+        scene: scene("🍎", "Рыночек", "Витрина сияет", "#ffafcc")
+      },
+      {
+        question: "Кот лёг на клавиатуру. Что делать?",
+        options: ["Погладить", "Печатать лбом"],
+        correct: 0,
+        category: "fun",
+        calm: true,
+        scene: scene("⌨️", "Кото-офис", "Работа остановилась", "#b9fbc0")
+      },
+      {
+        question: "Какой океан самый большой?",
+        options: ["Тихий", "Лавовый"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("🌊", "Океан", "Волны громче будильника", "#a3c4f3")
+      },
+      {
+        question: "Что пьют кактусы?",
+        options: ["Воду", "Колу"],
+        correct: 0,
+        category: "fun",
+        scene: scene("🌵", "Пустыня", "Солнце печет", "#fdffb6")
+      },
+      {
+        question: "Сколько будет 7 × 8?",
+        options: ["56", "58"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("✖️", "Математика", "Скорость важнее калькулятора", "#b8f2e6")
+      },
+      {
+        question: "Столица Австралии?",
+        options: ["Канберра", "Сидней"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("🦘", "География", "Не самый известный город", "#cdb4db")
+      },
+      {
+        question: "Что тяжелее: кг ваты или кг железа?",
+        options: ["Одинаково", "Железо"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("⚖️", "Ловушка", "Килограмм он и есть килограмм", "#a2d2ff")
+      },
+      {
+        question: "Какой месяц имеет 28 дней?",
+        options: ["Все", "Только февраль"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("🗓️", "Календарь", "Хитрый вопрос", "#bde0fe")
+      },
+      {
+        question: "Сколько планет в Солнечной системе?",
+        options: ["8", "9"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("🪐", "Космос", "Плутон помнит", "#a3c4f3")
+      },
+      {
+        question: "Красный провод и синий провод. Что делать?",
+        options: ["Ничего", "Резать любой"],
+        correct: 0,
+        category: "fun",
+        risk: true,
+        scene: scene("🧨", "Бомба?", "Кажется, это будильник", "#ff9f9f")
+      },
+      {
+        question: "Кофе на ноутбук. Твоя реакция?",
+        options: ["Выключить", "Продолжать"],
+        correct: 0,
+        category: "danger",
+        scene: scene("☕", "Авария", "Пахнет приключениями", "#ffd166")
+      },
+      {
+        question: "Если нажать Alt + F4?",
+        options: ["Закроется окно", "Откроется портал"],
+        correct: 0,
+        category: "fun",
+        scene: scene("🪄", "Секретное комбо", "Осторожно с магией", "#ffafcc")
+      },
+      {
+        question: "Сколько букв в слове «семь»?",
+        options: ["4", "5"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("🔤", "Словарик", "Не путай с цифрой", "#b8f2e6")
+      },
+      {
+        question: "Ртуть — это...",
+        options: ["Металл", "Газ"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("🧪", "Химия", "Жидкий металл", "#bae6fd")
+      },
+      {
+        question: "Сколько сторон у треугольника?",
+        options: ["3", "4"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("🔺", "Геометрия", "Классика", "#bde0fe")
+      },
+      {
+        question: "На двери табличка «Не входить». Что делать?",
+        options: ["Войти", "Не входить"],
+        correct: 1,
+        category: "danger",
+        scene: scene("🚪", "Запрет", "Иногда стоит слушаться", "#c3aed6")
+      },
+      {
+        question: "Сколько будет 1 + 1 × 0?",
+        options: ["1", "2"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("➗", "Порядок действий", "Умножение раньше сложения", "#b8f2e6")
+      },
+      {
+        question: "Что больше: 0.5 или 0.05?",
+        options: ["0.5", "0.05"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("🔢", "Доли", "Нули иногда обманывают", "#a2d2ff")
+      },
+      {
+        question: "Сколько месяцев имеют 30 дней?",
+        options: ["4", "6"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("📆", "Календарь", "Считай внимательно", "#bde0fe")
+      },
+      {
+        question: "Что исчезает, когда произносишь это?",
+        options: ["Тишина", "Эхо"],
+        correct: 0,
+        category: "fun",
+        scene: scene("🤫", "Загадка", "Слова иногда мешают", "#ffafcc")
+      },
+      {
+        question: "Если ты обгоняешь второго, то ты...",
+        options: ["Первый", "Второй"],
+        correct: 1,
+        category: "quiz",
+        scene: scene("🏁", "Ловушка", "Подумай о месте", "#a3c4f3")
+      },
+      {
+        question: "Сколько граней у куба?",
+        options: ["6", "8"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("🎲", "Геометрия", "Куб — не коробка для магии", "#bde0fe")
+      },
+      {
+        question: "Какая планета ближе к Солнцу?",
+        options: ["Меркурий", "Венера"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("☀️", "Космос", "Горячая гонка", "#ffd166")
+      },
+      {
+        question: "Что больше: 3² или 2³?",
+        options: ["3²", "2³"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("📐", "Степени", "Не путай квадраты и кубы", "#b8f2e6")
+      },
+      {
+        question: "Сколько букв в слове «день»?",
+        options: ["4", "5"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("🔤", "Буквы", "Слова любят точность", "#cdb4db")
+      },
+      {
+        question: "Что можно увидеть с закрытыми глазами?",
+        options: ["Сон", "Ладони"],
+        correct: 0,
+        category: "fun",
+        scene: scene("😴", "Двусмысленно", "Подумай о ночи", "#ffafcc")
+      },
+      {
+        question: "Выбери НЕ транспорт.",
+        options: ["Лодка", "Подушка"],
+        correct: 1,
+        category: "fun",
+        scene: scene("🛶", "Прикол", "Плывем без подушки", "#b9fbc0")
+      },
+      {
+        question: "В комнате 4 угла. В каждом по коту. Перед каждым котом 3 кота. Сколько котов?",
+        options: ["4", "12"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("🐱", "Ловушка", "Они смотрят друг на друга", "#ffc8dd")
+      },
+      {
+        question: "Сколько будет 1000 − 7?",
+        options: ["993", "997"],
+        correct: 0,
+        category: "fun",
+        scene: scene("🧠", "Мем", "Сдержись, не считай вслух", "#a7f3d0")
+      },
+      {
+        question: "Что тяжелее: 2 кг или 2000 г?",
+        options: ["Одинаково", "2 кг"],
+        correct: 0,
+        category: "quiz",
+        scene: scene("⚖️", "Вес", "Единицы важны", "#a2d2ff")
+      },
+      {
+        question: "Что можно поймать, но нельзя бросить?",
+        options: ["Простуду", "Мяч"],
+        correct: 0,
+        category: "fun",
+        scene: scene("🤧", "Загадка", "Береги нос", "#ffafcc")
+      },
+      {
+        question: "Если повернуть цифру 6, получим...",
+        options: ["9", "0"],
+        correct: 0,
+        category: "fun",
+        scene: scene("🔄", "Перевёртыш", "Поверни мысль", "#bde0fe")
+      },
+      {
+        question: "Сколько раз можно вычесть 1 из 5?",
+        options: ["1 раз", "5 раз"],
+        correct: 0,
+        category: "quiz",
+        trap: true,
+        difficulty: "hard",
+        scene: scene("🧩", "Ловушка", "После первого раза будет уже 4", "#b8f2e6")
+      },
+      {
+        question: "Когда стрелки часов снова совпадут после 12:00?",
+        options: ["Через 1 час", "Через 1 час 5 минут"],
+        correct: 1,
+        category: "quiz",
+        trap: true,
+        difficulty: "hard",
+        scene: scene("🕰️", "Время", "Часы хитрее, чем кажутся", "#a3c4f3")
+      },
+      {
+        question: "0! (факториал нуля) равен?",
+        options: ["1", "0"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("🔢", "Факториал", "Математика любит парадоксы", "#bde0fe")
+      },
+      {
+        question: "Что больше: 2/3 или 3/5?",
+        options: ["2/3", "3/5"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("⚖️", "Доли", "Сравни дроби", "#a2d2ff")
+      },
+      {
+        question: "Сколько нулей в миллионе?",
+        options: ["6", "7"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("💰", "Миллион", "Нули любят компанию", "#ffd166")
+      },
+      {
+        question: "Если сегодня среда, то через 10 дней будет...",
+        options: ["Суббота", "Воскресенье"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("📅", "Календарь", "Считай по кругу", "#cdb4db")
+      },
+      {
+        question: "Какая буква идёт после Е в алфавите?",
+        options: ["Ё", "Ж"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("🔤", "Алфавит", "Ё тоже буква", "#bde0fe")
+      },
+      {
+        question: "Сколько градусов в прямом угле?",
+        options: ["90", "180"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("📐", "Углы", "Правильный угол — 90", "#a2d2ff")
+      },
+      {
+        question: "Сколько граней у тетраэдра?",
+        options: ["4", "6"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("🔺", "Геометрия", "Пирамидка с 4 гранями", "#b8f2e6")
+      },
+      {
+        question: "Сколько минут в четверти часа?",
+        options: ["15", "25"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("⏳", "Время", "Четверть — это 15", "#bae6fd")
+      },
+      {
+        question: "Следующее число: 2, 3, 5, 8, 13, ?",
+        options: ["21", "20"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("🧠", "Фибоначчи", "Каждое число — сумма двух", "#a3c4f3")
+      },
+      {
+        question: "Следующее число: 1, 1, 2, 3, 5, ?",
+        options: ["8", "7"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("🧠", "Ряд", "Вспомни правило", "#bde0fe")
+      },
+      {
+        question: "Что станет мокрым, пока сушит?",
+        options: ["Полотенце", "Фен"],
+        correct: 0,
+        category: "fun",
+        difficulty: "hard",
+        scene: scene("🧺", "Загадка", "Сухое не сушит", "#ffafcc")
+      },
+      {
+        question: "Что растёт, когда его делят?",
+        options: ["Секрет", "Пирог"],
+        correct: 0,
+        category: "fun",
+        difficulty: "hard",
+        scene: scene("🤫", "Двусмысленно", "Чем больше людей, тем больше секрет", "#ffc8dd")
+      },
+      {
+        question: "Что можно сломать, даже не трогая?",
+        options: ["Обещание", "Карандаш"],
+        correct: 0,
+        category: "fun",
+        difficulty: "hard",
+        scene: scene("🤝", "Загадка", "Слова сильнее рук", "#b9fbc0")
+      },
+      {
+        question: "Сколько букв в слове «сорок»?",
+        options: ["5", "6"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("🔤", "Буквы", "Не путай со числом", "#cdb4db")
+      },
+      {
+        question: "Сколько будет 3 + 3 × 3?",
+        options: ["12", "18"],
+        correct: 0,
+        category: "quiz",
+        trap: true,
+        difficulty: "hard",
+        scene: scene("➕", "Порядок действий", "Сначала умножение", "#b8f2e6")
+      },
+      {
+        question: "Что больше: 0.1 или 0.01?",
+        options: ["0.1", "0.01"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("🔢", "Доли", "Нули не всегда помогают", "#a2d2ff")
+      },
+      {
+        question: "Сколько у кота жизней?",
+        options: ["9", "1"],
+        correct: 0,
+        category: "fun",
+        difficulty: "hard",
+        scene: scene("🐾", "Кото-мифы", "У кота запасные жизни", "#ffafcc")
+      },
+      {
+        question: "Какой цвет у прозрачного?",
+        options: ["Никакой", "Белый"],
+        correct: 0,
+        category: "fun",
+        difficulty: "hard",
+        scene: scene("🫧", "Философия", "Прозрачное не имеет цвета", "#bae6fd")
+      },
+      {
+        question: "Сколько букв «а» в слове «пятница»?",
+        options: ["1", "0"],
+        correct: 1,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("🔤", "Ловушка", "А нет совсем", "#bde0fe")
+      },
+      {
+        question: "Из двух чисел большее 7 и меньшее 9 — это...",
+        options: ["8", "7"],
+        correct: 0,
+        category: "quiz",
+        trap: true,
+        difficulty: "hard",
+        scene: scene("🎯", "Логика", "Между — значит 8", "#a3c4f3")
+      },
+      {
+        question: "Какой месяц короче: февраль или апрель?",
+        options: ["Февраль", "Апрель"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("🌙", "Календарь", "Февраль — короче всех", "#cdb4db")
+      },
+      {
+        question: "Сколько рёбер у куба?",
+        options: ["12", "8"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("🧊", "Геометрия", "Рёбер больше, чем кажется", "#b8f2e6")
+      },
+      {
+        question: "Сколько континентов на Земле?",
+        options: ["7", "6"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("🌍", "География", "Классическая семёрка", "#a3c4f3")
+      },
+      {
+        question: "В каком слове больше букв: «пять» или «пятьдесят»?",
+        options: ["Пятьдесят", "Пять"],
+        correct: 0,
+        category: "fun",
+        difficulty: "hard",
+        scene: scene("🧠", "Слова", "Ответ очевиден, но проверь", "#ffafcc")
+      },
+      {
+        question: "Если разделить 10 на 1/2, получится...",
+        options: ["20", "5"],
+        correct: 0,
+        category: "quiz",
+        trap: true,
+        difficulty: "hard",
+        scene: scene("➗", "Доли", "Делить на половину — это умножать", "#b8f2e6")
+      },
+      {
+        question: "Что больше: 1/4 или 0.3?",
+        options: ["0.3", "1/4"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("🔢", "Сравнение", "0.25 против 0.3", "#a2d2ff")
+      },
+      {
+        question: "Сколько букв «о» в слове «шоколад»?",
+        options: ["1", "2"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("🍫", "Буквы", "Сладкая ловушка", "#cdb4db")
+      },
+      {
+        question: "Что всегда впереди, но никогда не догнать?",
+        options: ["Будущее", "Тень"],
+        correct: 0,
+        category: "fun",
+        difficulty: "hard",
+        scene: scene("⏳", "Загадка", "Время не догнать", "#ffafcc")
+      },
+      {
+        question: "Что больше: 2.5 или 2.05?",
+        options: ["2.5", "2.05"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("🔢", "Десятичные", "Сравни внимательно", "#bde0fe")
+      },
+      {
+        question: "Какой знак ставится в конце вопроса?",
+        options: ["?", "!"],
+        correct: 0,
+        category: "fun",
+        difficulty: "hard",
+        scene: scene("❓", "Очевидно", "Но ловко!", "#b9fbc0")
+      },
+      {
+        question: "Чего нет в пустом стакане?",
+        options: ["Содержимого", "Стакана"],
+        correct: 0,
+        category: "fun",
+        difficulty: "hard",
+        scene: scene("🥛", "Загадка", "Пустота — тоже ответ", "#ffc8dd")
+      },
+      {
+        question: "Сколько букв в слове «двенадцать»?",
+        options: ["9", "8"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("🔤", "Счёт букв", "Не число, а слово", "#b8f2e6")
+      },
+      {
+        question: "Если 5 + 5 = 10, то 5 + 5 + 5 = ...",
+        options: ["15", "25"],
+        correct: 0,
+        category: "quiz",
+        trap: true,
+        difficulty: "hard",
+        scene: scene("➕", "Сложение", "Не усложняй", "#a2d2ff")
+      },
+      {
+        question: "Какая из фигур НЕ имеет углов?",
+        options: ["Круг", "Треугольник"],
+        correct: 0,
+        category: "quiz",
+        difficulty: "hard",
+        scene: scene("⚪", "Геометрия", "У круга нет углов", "#bde0fe")
+      },
+      {
+        question: "Можно ли растянуть резинку до бесконечности?",
+        options: ["Нет", "Да"],
+        correct: 0,
+        category: "fun",
+        difficulty: "hard",
+        scene: scene("🪢", "Ловушка", "Терпение резинки не бесконечно", "#ffafcc")
+      },
+      {
+        question: "Если слово написано с ошибкой, это слово...",
+        options: ["С ошибкой", "Правильное"],
+        correct: 0,
+        category: "fun",
+        difficulty: "hard",
+        scene: scene("✍️", "Ловушка", "Ошибка — это ошибка", "#cdb4db")
+      }
+    ];
+
+    const tutorialLevels = [
+      {
+        question: "Обучение: выбери безопасный вариант.",
+        options: ["Прыгнуть в воду с телефоном", "Положить телефон в карман"],
+        correct: 1,
+        category: "fun",
+        scene: scene("🧭", "Обучение", "Всегда есть более разумный выбор", "#7bdff2")
+      },
+      {
+        question: "Обучение: успей за 5 секунд.",
+        options: ["Нажать правильно", "Нажать неправильно"],
+        correct: 0,
+        category: "quiz",
+        calm: false,
+        scene: scene("⏱️", "Темп", "Скорость тоже часть игры", "#ffd166")
+      }
+    ];
+
+    levels.forEach((level, index) => {
+      level.id = index;
+    });
+
+    const normalLevels = levels.filter((level) => level.difficulty !== "hard");
+    const hardLevels = levels.filter((level) => level.difficulty === "hard");
+
+    const scoreEl = document.getElementById("score");
+    const streakEl = document.getElementById("streak");
+    const bestScoreEl = document.getElementById("bestScore");
+    const speedInfoEl = document.getElementById("speedInfo");
+    const questionEl = document.getElementById("question");
+    const optionA = document.getElementById("optionA");
+    const optionB = document.getElementById("optionB");
+    const timerFill = document.getElementById("timerFill");
+    const timerLabel = document.getElementById("timerLabel");
+    const visualEl = document.getElementById("visual");
+    const hintEl = document.getElementById("hint");
+    const livesEl = document.getElementById("lives");
+    const modeBtn = document.getElementById("modeBtn");
+    const themeBtn = document.getElementById("themeBtn");
+    const difficultyBtn = document.getElementById("difficultyBtn");
+    const soundBtn = document.getElementById("soundBtn");
+    const vibeBtn = document.getElementById("vibeBtn");
+    const overlay = document.getElementById("overlay");
+    const resultTitle = document.getElementById("resultTitle");
+    const resultText = document.getElementById("resultText");
+    const finalScore = document.getElementById("finalScore");
+    const bestScoreFinal = document.getElementById("bestScoreFinal");
+    const bestStreakFinal = document.getElementById("bestStreakFinal");
+    const achievementsEl = document.getElementById("achievements");
+    const lastRunsEl = document.getElementById("lastRuns");
+    const highScoresEl = document.getElementById("highScores");
+    const restartBtn = document.getElementById("restartBtn");
+    const rewardBtn = document.getElementById("rewardBtn");
+    const levelStatus = document.getElementById("levelStatus");
+    const content = document.getElementById("content");
+    const adBanner = document.getElementById("adBanner");
+
+    const state = {
+      mode: "endless",
+      difficulty: "normal",
+      sound: true,
+      vibe: true,
+      status: "idle",
+      score: 0,
+      streak: 0,
+      bestScore: 0,
+      bestStreak: 0,
+      bestStreakRun: 0,
+      lives: CONFIG.lives,
+      levelIndex: 0,
+      current: null,
+      duration: CONFIG.baseDuration,
+      dailyQueue: [],
+      dailyIndex: 0,
+      recent: [],
+      lastCategories: [],
+      tutorialActive: false,
+      tutorialIndex: 0,
+      mistakes: 0,
+      achievements: new Set(),
+      unlockedThisRun: [],
+      themeIndex: 0
+    };
+
+    let timerId = null;
+    let animationId = null;
+    let startTime = 0;
+    let audioCtx = null;
+
+    const setHint = (text, pop = false) => {
+      if (!hintEl) return;
+      hintEl.textContent = text;
+      if (pop) {
+        hintEl.classList.remove("pop");
+        void hintEl.offsetWidth;
+        hintEl.classList.add("pop");
+      }
+    };
+
+    const initAudio = () => {
+      if (audioCtx) return;
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      audioCtx = new AudioContext();
+    };
+
+    const playTone = (freq, duration = 0.12, type = "sine", volume = 0.05) => {
+      if (!state.sound) return;
+      initAudio();
+      if (!audioCtx) return;
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume().catch(() => {});
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      gain.gain.value = volume;
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+      osc.stop(audioCtx.currentTime + duration);
+    };
+
+    const vibrate = (pattern) => {
+      if (!state.vibe) return;
+      if (navigator.vibrate) {
+        navigator.vibrate(pattern);
+      }
+    };
+
+    const renderAd = (blockId, renderTo) => {
+      if (!blockId || !renderTo) return;
+      if (!window.Ya || !window.Ya.Context || !window.Ya.Context.AdvManager) return;
+      try {
+        window.Ya.Context.AdvManager.render({
+          blockId,
+          renderTo
+        });
+      } catch (error) {
+        // silent fail
+      }
+    };
+
+    const getActiveLevels = () => {
+      if (state.difficulty === "hard") {
+        return hardLevels.length ? hardLevels : levels;
+      }
+      return normalLevels.length ? normalLevels : levels;
+    };
+
+    const renderRewarded = () => {
+      if (!ADS.rewardedId) return Promise.resolve(false);
+      return new Promise((resolve) => {
+        if (!window.Ya || !window.Ya.Context || !window.Ya.Context.AdvManager) {
+          resolve(false);
+          return;
+        }
+        try {
+          window.Ya.Context.AdvManager.render({
+            blockId: ADS.rewardedId,
+            type: "rewarded",
+            onRewarded: () => resolve(true),
+            onClose: () => resolve(false),
+            onError: () => resolve(false)
+          });
+        } catch (error) {
+          resolve(false);
+        }
+      });
+    };
+
+    const showBannerAd = () => {
+      if (!adBanner) return;
+      window.yaContextCb.push(() => renderAd(ADS.bannerId, "adBanner"));
+    };
+
+    const updateHint = (points = 1) => {
+      const message = reactions[Math.floor(Math.random() * reactions.length)];
+      const bonus = points > 1 ? ` +${points}` : "";
+      setHint(`${message}${bonus}`, true);
+    };
+
+    const makeVisual = (level) => {
+      const fallback = {
+        icon: "❔",
+        title: "Неизвестная сцена",
+        subtitle: "Без подсказок",
+        accent: "#8fa4ff"
+      };
+      const sceneData = level.scene || fallback;
+      const glow = sceneData.accent;
+
+      return `
+        <svg viewBox="0 0 320 200" role="img" aria-label="${sceneData.title}">
+          <defs>
+            <linearGradient id="bgGrad" x1="0" x2="1">
+              <stop offset="0%" stop-color="#0f131a" />
+              <stop offset="50%" stop-color="${glow}" stop-opacity="0.15" />
+              <stop offset="100%" stop-color="#0f131a" />
+            </linearGradient>
+            <radialGradient id="sceneGlow" cx="50%" cy="30%" r="70%">
+              <stop offset="0%" stop-color="${glow}" stop-opacity="0.35" />
+              <stop offset="100%" stop-color="#0f131a" stop-opacity="0" />
+            </radialGradient>
+            <filter id="softBlur" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="10" />
+            </filter>
+          </defs>
+          <rect x="0" y="0" width="320" height="200" fill="url(#bgGrad)" />
+          <rect x="0" y="0" width="320" height="200" fill="url(#sceneGlow)" />
+          <circle class="orb" cx="42" cy="38" r="26" fill="${glow}" opacity="0.15" filter="url(#softBlur)" />
+          <circle class="orb" cx="290" cy="56" r="18" fill="${glow}" opacity="0.12" filter="url(#softBlur)" />
+          <path class="wave" d="M0 140 C 60 120, 120 160, 180 140 C 240 120, 280 160, 320 140 L 320 200 L 0 200 Z" fill="${glow}" opacity="0.08" />
+          <path class="wave" d="M0 156 C 70 136, 140 176, 210 156 C 260 140, 290 176, 320 160 L 320 200 L 0 200 Z" fill="${glow}" opacity="0.12" />
+          <rect class="sweep" x="-140" y="0" width="140" height="200" fill="#ffffff" opacity="0.04" />
+          <circle class="spark" cx="88" cy="52" r="2.2" fill="#ffffff" style="animation-delay:0.2s" />
+          <circle class="spark" cx="130" cy="36" r="1.8" fill="#ffffff" style="animation-delay:0.6s" />
+          <circle class="spark" cx="246" cy="44" r="2.4" fill="#ffffff" style="animation-delay:1s" />
+          <circle class="spark" cx="210" cy="26" r="1.6" fill="#ffffff" style="animation-delay:1.4s" />
+          <circle cx="160" cy="76" r="72" fill="${glow}" opacity="0.12" filter="url(#softBlur)" />
+          <text class="scene-icon" x="160" y="78" font-size="58" text-anchor="middle" dominant-baseline="middle">${sceneData.icon}</text>
+          <text x="160" y="142" font-size="15" text-anchor="middle" fill="#eef3ff">${sceneData.title}</text>
+          <text x="160" y="168" font-size="12" text-anchor="middle" fill="#a6b2c7">${sceneData.subtitle}</text>
+        </svg>
+      `;
+    };
+
+    const getTodayKey = () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    const seedFromString = (value) => {
+      let hash = 0;
+      for (let i = 0; i < value.length; i += 1) {
+        hash = (hash << 5) - hash + value.charCodeAt(i);
+        hash |= 0;
+      }
+      return hash >>> 0;
+    };
+
+    const mulberry32 = (seed) => {
+      let t = seed;
+      return () => {
+        t += 0x6d2b79f5;
+        let x = t;
+        x = Math.imul(x ^ (x >>> 15), x | 1);
+        x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
+        return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+      };
+    };
+
+    const seededShuffle = (array, seed) => {
+      const result = [...array];
+      const rand = mulberry32(seed);
+      for (let i = result.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(rand() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+      return result;
+    };
+
+    const renderThemeButton = (theme) => {
+      const swatches = (theme.swatches || []).slice(0, 3);
+      const dots = swatches
+        .map((color) => `<span class="swatch" style="background:${color}"></span>`)
+        .join("");
+      themeBtn.innerHTML = `
+        <span>Тема: ${theme.name}</span>
+        <span class="swatches">${dots}</span>
+      `;
+      themeBtn.setAttribute("aria-label", `Тема: ${theme.name}`);
+    };
+
+    const applyTheme = (index) => {
+      const theme = THEMES[index % THEMES.length];
+      Object.entries(theme.vars).forEach(([key, value]) => {
+        document.documentElement.style.setProperty(key, value);
+      });
+      renderThemeButton(theme);
+    };
+
+    const loadRuns = () => {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE.lastRuns) || "[]");
+      } catch (error) {
+        return [];
+      }
+    };
+
+    const saveRuns = (runs) => {
+      localStorage.setItem(STORAGE.lastRuns, JSON.stringify(runs.slice(0, 5)));
+    };
+
+    const renderRuns = () => {
+      const runs = loadRuns();
+      if (!lastRunsEl) return;
+      if (!runs.length) {
+        lastRunsEl.textContent = "Прошлых забегов нет";
+        return;
+      }
+      lastRunsEl.innerHTML = runs
+        .map((run) => `${run.date} • ${run.mode === "daily" ? "дневной" : "бесконечный"} • ${run.score} оч.`)
+        .map((line) => `<div>${line}</div>`)
+        .join("");
+    };
+
+    const loadHighScores = () => {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE.highScores) || "[]");
+      } catch (error) {
+        return [];
+      }
+    };
+
+    const saveHighScores = (scores) => {
+      localStorage.setItem(STORAGE.highScores, JSON.stringify(scores.slice(0, 5)));
+    };
+
+    const updateHighScores = (entry) => {
+      const scores = loadHighScores();
+      scores.push(entry);
+      scores.sort((a, b) => b.score - a.score);
+      saveHighScores(scores);
+    };
+
+    const renderHighScores = () => {
+      if (!highScoresEl) return;
+      const scores = loadHighScores();
+      if (!scores.length) {
+        highScoresEl.textContent = "Топ: пока пусто";
+        return;
+      }
+      const lines = scores.slice(0, 5).map((run, index) => {
+        const modeLabel = run.mode === "daily" ? "дневной" : "бесконечный";
+        const diffLabel = run.difficulty === "hard" ? "хард" : "норм";
+        return `${index + 1}) ${run.score} оч. • ${modeLabel} • ${diffLabel}`;
+      });
+      highScoresEl.innerHTML = `<div class="title">Топ забегов</div>` + lines.map((line) => `<div>${line}</div>`).join("");
+    };
+
+    const unlockAchievement = (id) => {
+      if (state.achievements.has(id)) return;
+      state.achievements.add(id);
+      state.unlockedThisRun.push(id);
+      localStorage.setItem(STORAGE.achievements, JSON.stringify([...state.achievements]));
+    };
+
+    const renderAchievements = () => {
+      if (!achievementsEl) return;
+      if (!state.achievements.size) {
+        achievementsEl.innerHTML = `<span class="achievement">Без ачивок</span>`;
+        return;
+      }
+      const unlocked = new Set(state.unlockedThisRun);
+      achievementsEl.innerHTML = [...state.achievements]
+        .map((id) => {
+          const title = ACHIEVEMENT_TITLES[id] || id;
+          const isNew = unlocked.has(id) ? "new" : "";
+          return `<span class="achievement ${isNew}">${title}</span>`;
+        })
+        .join("");
+    };
+
+    const updateScore = () => {
+      scoreEl.textContent = state.score.toString();
+    };
+
+    const updateStreak = () => {
+      streakEl.textContent = state.streak.toString();
+    };
+
+    const updateLives = () => {
+      livesEl.textContent = "❤".repeat(state.lives);
+    };
+
+    const updateBest = () => {
+      bestScoreEl.textContent = state.bestScore.toString();
+    };
+
+    const updateSpeedInfo = () => {
+      if (!speedInfoEl) return;
+      if (state.tutorialActive) {
+        speedInfoEl.textContent = "Обучение";
+        return;
+      }
+      if (state.current && state.current.calm) {
+        speedInfoEl.textContent = "Пауза";
+        return;
+      }
+      const step = ((state.levelIndex - 1) % CONFIG.speedUpEvery);
+      const remaining = CONFIG.speedUpEvery - (step < 0 ? 0 : step);
+      speedInfoEl.textContent = `Ускорение через ${remaining}`;
+    };
+
+    const stopTimer = () => {
+      clearTimeout(timerId);
+      cancelAnimationFrame(animationId);
+    };
+
+    const tickTimer = () => {
+      const elapsed = performance.now() - startTime;
+      const remaining = Math.max(state.duration - elapsed, 0);
+      const progress = remaining / state.duration;
+      timerFill.style.width = `${progress * 100}%`;
+      if (remaining > 0) {
+        animationId = requestAnimationFrame(tickTimer);
+      }
+    };
+
+    const startTimer = () => {
+      stopTimer();
+      if (state.current && state.current.calm) {
+        timerLabel.textContent = "Пауза";
+        timerFill.style.width = "100%";
+        return;
+      }
+      timerLabel.textContent = "";
+      startTime = performance.now();
+      timerId = setTimeout(() => {
+        handleFailure("time");
+      }, state.duration);
+      tickTimer();
+    };
+
+    const updateDuration = () => {
+      if (state.tutorialActive) {
+        state.duration = Math.max(CONFIG.baseDuration, 5500);
+        updateSpeedInfo();
+        return;
+      }
+      const speedSteps = Math.floor((state.levelIndex - 1) / CONFIG.speedUpEvery);
+      state.duration = Math.max(CONFIG.minDuration, CONFIG.baseDuration - speedSteps * CONFIG.speedUpBy);
+      updateSpeedInfo();
+    };
+
+    const weightForLevel = (level) => {
+      let weight = CATEGORY_WEIGHTS[level.category] || 1;
+      if (level.jackpot) weight *= 0.4;
+      if (level.risk) weight *= 0.6;
+      if (level.calm) weight *= 0.55;
+      if (level.trap) weight *= 0.45;
+      return weight;
+    };
+
+    const weightedPick = () => {
+      const pool = getActiveLevels();
+      let candidates = pool.filter((level) => !state.recent.includes(level.id));
+      if (!candidates.length) {
+        candidates = [...pool];
+      }
+      const total = candidates.reduce((sum, level) => sum + weightForLevel(level), 0);
+      let roll = Math.random() * total;
+      for (const level of candidates) {
+        roll -= weightForLevel(level);
+        if (roll <= 0) {
+          return level;
+        }
+      }
+      return candidates[candidates.length - 1];
+    };
+
+    const pickLevel = () => {
+      for (let i = 0; i < 5; i += 1) {
+        const candidate = weightedPick();
+        const last = state.lastCategories[state.lastCategories.length - 1];
+        const prev = state.lastCategories[state.lastCategories.length - 2];
+        if (last && prev && candidate.category === last && candidate.category === prev) {
+          continue;
+        }
+        return candidate;
+      }
+      return weightedPick();
+    };
+
+    const prepareDailyQueue = () => {
+      const pool = getActiveLevels();
+      const seed = seedFromString(getTodayKey());
+      const shuffled = seededShuffle(pool, seed);
+      state.dailyQueue = shuffled.slice(0, CONFIG.dailyCount);
+      state.dailyIndex = 0;
+    };
+
+    const renderLevel = () => {
+      content.classList.remove("fade");
+      void content.offsetWidth;
+      content.classList.add("fade");
+
+      let title = `Уровень ${state.levelIndex}`;
+      if (state.tutorialActive) {
+        title = `Обучение ${state.tutorialIndex}/${tutorialLevels.length}`;
+      } else if (state.mode === "daily") {
+        title = `День ${state.dailyIndex}/${state.dailyQueue.length}`;
+      }
+
+      levelStatus.textContent = title;
+      questionEl.textContent = state.current.question;
+      optionA.textContent = state.current.options[0];
+      optionB.textContent = state.current.options[1];
+      visualEl.innerHTML = makeVisual(state.current);
+
+      const tags = [];
+      if (state.tutorialActive) tags.push("Обучение");
+      if (state.current.category) {
+        tags.push(CATEGORY_LABELS[state.current.category] || state.current.category);
+      }
+      if (state.current.jackpot) tags.push("Джекпот");
+      if (state.current.risk) tags.push("Риск");
+      if (state.current.trap) tags.push("Ловушка");
+      if (state.current.calm) tags.push("Пауза");
+      if (state.difficulty === "hard") tags.push("Хард");
+      setHint(tags.join(" • ") || "Готов? Жми быстро.");
+    };
+
+    const nextLevel = () => {
+      state.status = "playing";
+      state.current = null;
+      if (state.tutorialActive) {
+        if (state.tutorialIndex < tutorialLevels.length) {
+          state.current = tutorialLevels[state.tutorialIndex];
+          state.tutorialIndex += 1;
+        } else {
+          state.tutorialActive = false;
+          localStorage.setItem(STORAGE.tutorial, "1");
+          setHint("Обучение пройдено!", true);
+        }
+      }
+      if (state.mode === "daily") {
+        if (!state.current && state.dailyIndex >= state.dailyQueue.length) {
+          return completeDaily();
+        }
+        if (!state.current) {
+          state.current = state.dailyQueue[state.dailyIndex];
+          state.dailyIndex += 1;
+        }
+      } else {
+        if (!state.current) {
+          state.current = pickLevel();
+          state.recent.push(state.current.id);
+          if (state.recent.length > 8) state.recent.shift();
+          if (state.current.category) {
+            state.lastCategories.push(state.current.category);
+            if (state.lastCategories.length > 4) state.lastCategories.shift();
+          }
+        }
+      }
+      state.levelIndex += 1;
+      updateDuration();
+      renderLevel();
+      startTimer();
+    };
+
+    const addScore = (level) => {
+      let points = 1;
+      if (level.jackpot) points += 1;
+      if (level.risk) points += 1;
+      if (level.trap) points += 2;
+      if (state.streak > 0 && state.streak % 5 === 0) points += 1;
+      state.score += points;
+      updateScore();
+      return points;
+    };
+
+    const handleSuccess = () => {
+      stopTimer();
+      state.streak += 1;
+      state.bestStreakRun = Math.max(state.bestStreakRun, state.streak);
+      updateStreak();
+      playTone(620, 0.12, "triangle", 0.06);
+      vibrate(20);
+
+      if (state.streak >= 5) unlockAchievement("streak5");
+      if (state.streak >= 10) unlockAchievement("streak10");
+      if (state.current.jackpot) unlockAchievement("jackpot");
+      if (state.current.risk) unlockAchievement("riskWin");
+      if (state.mistakes === 0 && state.levelIndex >= 10) unlockAchievement("perfect10");
+
+      const points = addScore(state.current);
+      updateHint(points);
+      state.status = "transition";
+      setTimeout(nextLevel, CONFIG.transitionDelay);
+    };
+
+    const handleFailure = (reasonType) => {
+      if (state.status !== "playing") return;
+      stopTimer();
+      state.streak = 0;
+      state.mistakes += 1;
+      updateStreak();
+
+      const phrases = failReactions[reasonType] || failReactions.wrong;
+      const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+      const detail = reasonType === "time" ? "Время вышло." : "Неверный выбор.";
+      const combined = `${phrase} ${detail}`;
+      playTone(180, 0.18, "sawtooth", 0.06);
+      vibrate([40, 20, 40]);
+
+      const lifeLoss = state.current && state.current.risk ? 2 : 1;
+      state.lives = Math.max(0, state.lives - lifeLoss);
+      updateLives();
+
+      if (state.current && state.current.risk && state.score > 0) {
+        state.score = Math.max(0, state.score - 1);
+        updateScore();
+      }
+
+      setHint(`${phrase} -${lifeLoss}❤`, true);
+      content.classList.remove("shake");
+      void content.offsetWidth;
+      content.classList.add("shake");
+
+      if (state.lives <= 0) {
+        return gameOver(combined);
+      }
+
+      state.status = "transition";
+      setTimeout(nextLevel, 350);
+    };
+
+    const gameOver = (reason, won = false) => {
+      state.status = "over";
+      stopTimer();
+      overlay.classList.add("show");
+
+      if (state.score > state.bestScore) {
+        state.bestScore = state.score;
+        localStorage.setItem(STORAGE.bestScore, state.bestScore.toString());
+      }
+      if (state.bestStreakRun > state.bestStreak) {
+        state.bestStreak = state.bestStreakRun;
+        localStorage.setItem(STORAGE.bestStreak, state.bestStreak.toString());
+      }
+      updateBest();
+
+      const runs = loadRuns();
+      runs.unshift({
+        date: getTodayKey(),
+        score: state.score,
+        mode: state.mode
+      });
+      saveRuns(runs);
+
+      updateHighScores({
+        date: getTodayKey(),
+        score: state.score,
+        mode: state.mode,
+        difficulty: state.difficulty
+      });
+
+      resultTitle.textContent = won ? "Победа!" : "Проигрыш";
+      resultText.textContent = reason;
+      finalScore.textContent = state.score.toString();
+      finalScore.classList.toggle("win", won);
+      bestScoreFinal.textContent = state.bestScore.toString();
+      bestStreakFinal.textContent = state.bestStreak.toString();
+      if (rewardBtn) {
+        const canReward = state.lives <= 0 && ADS.rewardedId !== "REPLACE_WITH_YANDEX_REWARDED_ID";
+        rewardBtn.style.display = canReward ? "block" : "none";
+      }
+      renderAchievements();
+      renderRuns();
+      renderHighScores();
+    };
+
+    const completeDaily = () => {
+      unlockAchievement("dailyHero");
+      const today = getTodayKey();
+      const bestDate = localStorage.getItem(STORAGE.dailyDate);
+      let bestDaily = Number(localStorage.getItem(STORAGE.dailyBest)) || 0;
+      if (bestDate != today) {
+        bestDaily = 0;
+      }
+      if (state.score > bestDaily) {
+        localStorage.setItem(STORAGE.dailyBest, state.score.toString());
+        localStorage.setItem(STORAGE.dailyDate, today);
+      }
+      gameOver("Дневной челлендж пройден.", true);
+    };
+
+    const restartGame = () => {
+      overlay.classList.remove("show");
+      state.status = "playing";
+      state.score = 0;
+      state.streak = 0;
+      state.bestStreakRun = 0;
+      state.lives = CONFIG.lives;
+      state.levelIndex = 0;
+      state.current = null;
+      state.duration = CONFIG.baseDuration;
+      state.recent = [];
+      state.lastCategories = [];
+      if (state.tutorialActive) {
+        state.tutorialIndex = 0;
+      }
+      state.mistakes = 0;
+      state.unlockedThisRun = [];
+      updateScore();
+      updateStreak();
+      updateLives();
+      setHint("Готов? Жми быстро.");
+
+      if (state.mode === "daily") {
+        prepareDailyQueue();
+      }
+      nextLevel();
+    };
+
+    const applyMode = (mode) => {
+      state.mode = mode;
+      modeBtn.textContent = mode === "daily" ? "Режим: Дневной" : "Режим: Бесконечный";
+      modeBtn.classList.toggle("active", mode === "daily");
+      restartGame();
+    };
+
+    const applyDifficulty = (difficulty, shouldRestart = true) => {
+      state.difficulty = difficulty;
+      difficultyBtn.textContent = difficulty === "hard" ? "Сложность: Хард" : "Сложность: Норм";
+      difficultyBtn.classList.toggle("active", difficulty === "hard");
+      localStorage.setItem(STORAGE.difficulty, difficulty);
+      if (shouldRestart) {
+        restartGame();
+      }
+    };
+
+    const applySound = (enabled) => {
+      state.sound = enabled;
+      soundBtn.textContent = enabled ? "Звук: Вкл" : "Звук: Выкл";
+      soundBtn.classList.toggle("active", enabled);
+      localStorage.setItem(STORAGE.sound, enabled ? "1" : "0");
+    };
+
+    const applyVibe = (enabled) => {
+      state.vibe = enabled;
+      vibeBtn.textContent = enabled ? "Вибро: Вкл" : "Вибро: Выкл";
+      vibeBtn.classList.toggle("active", enabled);
+      localStorage.setItem(STORAGE.vibe, enabled ? "1" : "0");
+    };
+
+    optionA.addEventListener("click", () => {
+      if (state.status !== "playing") return;
+      if (!state.current) return;
+      playTone(420, 0.05, "sine", 0.03);
+      state.current.correct === 0 ? handleSuccess() : handleFailure("wrong");
+    });
+
+    optionB.addEventListener("click", () => {
+      if (state.status !== "playing") return;
+      if (!state.current) return;
+      playTone(420, 0.05, "sine", 0.03);
+      state.current.correct === 1 ? handleSuccess() : handleFailure("wrong");
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (state.status !== "playing") return;
+      if (event.key === "1") optionA.click();
+      if (event.key === "2") optionB.click();
+    });
+
+    restartBtn.addEventListener("click", restartGame);
+    rewardBtn.addEventListener("click", async () => {
+      rewardBtn.disabled = true;
+      const rewarded = await renderRewarded();
+      rewardBtn.disabled = false;
+      if (!rewarded) return;
+      overlay.classList.remove("show");
+      state.lives = 1;
+      updateLives();
+      setHint("Второй шанс!");
+      state.status = "playing";
+      state.current = null;
+      nextLevel();
+    });
+    modeBtn.addEventListener("click", () => {
+      applyMode(state.mode === "daily" ? "endless" : "daily");
+    });
+
+    themeBtn.addEventListener("click", () => {
+      state.themeIndex = (state.themeIndex + 1) % THEMES.length;
+      localStorage.setItem(STORAGE.theme, state.themeIndex.toString());
+      applyTheme(state.themeIndex);
+    });
+
+    difficultyBtn.addEventListener("click", () => {
+      applyDifficulty(state.difficulty === "hard" ? "normal" : "hard", true);
+    });
+
+    soundBtn.addEventListener("click", () => {
+      applySound(!state.sound);
+      if (state.sound) {
+        playTone(520, 0.08, "triangle", 0.05);
+      }
+    });
+
+    vibeBtn.addEventListener("click", () => {
+      applyVibe(!state.vibe);
+      vibrate(30);
+    });
+
+    const init = () => {
+      state.bestScore = Number(localStorage.getItem(STORAGE.bestScore)) || 0;
+      state.bestStreak = Number(localStorage.getItem(STORAGE.bestStreak)) || 0;
+      state.themeIndex = Number(localStorage.getItem(STORAGE.theme)) || 0;
+      state.difficulty = localStorage.getItem(STORAGE.difficulty) || "normal";
+      state.sound = localStorage.getItem(STORAGE.sound) !== "0";
+      state.vibe = localStorage.getItem(STORAGE.vibe) !== "0";
+      state.tutorialActive = localStorage.getItem(STORAGE.tutorial) !== "1";
+      state.achievements = new Set(
+        JSON.parse(localStorage.getItem(STORAGE.achievements) || "[]")
+      );
+      updateBest();
+      updateScore();
+      updateStreak();
+      updateLives();
+      applyTheme(state.themeIndex);
+      applyDifficulty(state.difficulty, false);
+      applySound(state.sound);
+      applyVibe(state.vibe);
+      applyMode("endless");
+      showBannerAd();
+    };
+
+    init();
+  </script>
+</body>
+</html>
+

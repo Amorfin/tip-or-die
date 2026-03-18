@@ -1596,6 +1596,8 @@
       lives: CONFIG.lives,
       levelIndex: 0,
       current: null,
+      currentOptions: [],
+      currentCorrectIndex: 0,
       duration: CONFIG.baseDuration,
       dailyQueue: [],
       dailyIndex: 0,
@@ -1769,6 +1771,15 @@
         hash |= 0;
       }
       return hash >>> 0;
+    };
+
+    const shuffleOptions = (options) => {
+      const indexed = options.map((text, index) => ({ text, index }));
+      for (let i = indexed.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indexed[i], indexed[j]] = [indexed[j], indexed[i]];
+      }
+      return indexed;
     };
 
     const mulberry32 = (seed) => {
@@ -2027,8 +2038,11 @@
 
       levelStatus.textContent = title;
       questionEl.textContent = state.current.question;
-      optionA.textContent = state.current.options[0];
-      optionB.textContent = state.current.options[1];
+      const shuffled = shuffleOptions(state.current.options);
+      state.currentOptions = shuffled;
+      state.currentCorrectIndex = shuffled.findIndex((opt) => opt.index === state.current.correct);
+      optionA.textContent = shuffled[0].text;
+      optionB.textContent = shuffled[1].text;
       visualEl.innerHTML = makeVisual(state.current);
 
       const tags = [];
@@ -2218,6 +2232,8 @@
       state.lives = CONFIG.lives;
       state.levelIndex = 0;
       state.current = null;
+      state.currentOptions = [];
+      state.currentCorrectIndex = 0;
       state.duration = CONFIG.baseDuration;
       state.recent = [];
       state.lastCategories = [];
@@ -2272,14 +2288,14 @@
       if (state.status !== "playing") return;
       if (!state.current) return;
       playTone(420, 0.05, "sine", 0.03);
-      state.current.correct === 0 ? handleSuccess() : handleFailure("wrong");
+      state.currentCorrectIndex === 0 ? handleSuccess() : handleFailure("wrong");
     });
 
     optionB.addEventListener("click", () => {
       if (state.status !== "playing") return;
       if (!state.current) return;
       playTone(420, 0.05, "sine", 0.03);
-      state.current.correct === 1 ? handleSuccess() : handleFailure("wrong");
+      state.currentCorrectIndex === 1 ? handleSuccess() : handleFailure("wrong");
     });
 
     document.addEventListener("keydown", (event) => {
